@@ -2,6 +2,8 @@ ZeitPlanner Schedule Optimizer Using UPenn Registrar Course Scraper
 ================
 
 Written PennApps Spring 2013
+
+
 Javascript program that optimizes schedule for Penn students by scraping the UPenn Registrar.
 
 # Contributors
