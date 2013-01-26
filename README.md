@@ -1,6 +1,17 @@
-UPenn Registrar Course Scraper
+ZeitPlanner Schedule Optimizer Using UPenn Registrar Course Scraper
 ================
 
+Written PennApps Spring 2013
+Javascript program that optimizes schedule for Penn students by scraping the UPenn Registrar.
+
+# Contributors
+
+- Nina Lu <nilu@wharton.upenn.edu>
+- Lauren Reeder <lreeder@wharton.upenn.edu>
+- Mitchell Stern <mitstern@seas.upenn.edu>
+- Dylan Sun <dylansun.upenn@gmail.com>
+
+Scraper:
 A CoffeeScript module that scrapes the UPenn Registrar. Please install [node](http://nodejs.org) and [CoffeeScript](http://coffeescript.org).
 
 # Quick Start
