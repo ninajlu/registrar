@@ -1,0 +1,195 @@
+<html>
+    
+    <head>
+        <title>Penn Scheduler</title>
+        <style type="text/css">
+            * {
+                font-family:Georgia, sans-serif;
+                text-align:center;
+            }
+            .centerVertically {
+                display: table-cell;
+                vertical-align: middle;
+            }
+        </style>
+    </head>
+    
+    <body>
+        <div id="container" align="center" style="width:950px; margin-left:auto; margin-right:auto;">
+            <div id="header" class="centerVertically" style="width:950px; height:50px; background-color:navy; color:white; font-size:50;">ZeitPlanner</div>
+            <br />
+            <div id="internalContainer" style="width:950px;">
+                <div id="input" style="float:left; width:*; background-color:white; padding:10px; border:3px black solid;">
+                    <script src="jquery.min.js"></script>
+                    <script src="InputHandling.js"></script>
+                    <div id="stylized" class="myform">
+                        <form name="form1">
+                            <div id="classes">
+                                <div id="classes1">Class 1&nbsp;&nbsp;
+                                    <input type="text" name="classes1">
+                                </div>
+                            </div>
+                            <input type="button" value="Add another class" onClick="addInput('classes');">
+                            <br />
+                            <br />
+                            <div id="events">
+                                <div id="events1">Lunch Break
+                                    <br />Days
+                                    <input type="checkbox" name="days" value="monday">M
+                                    <input type="checkbox" name="days" value="tuesday">T
+                                    <input type="checkbox" name="days" value="wednesday">W
+                                    <input type="checkbox" name="days" value="thursday">Th
+                                    <input type="checkbox" name="days" value="friday">F
+                                    <br />
+                                    <input type="checkbox" onclick="toggleAllDays(this);">Select All Days
+                                    <br />Start
+                                    <select name="starth">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12" selected>12</option>
+                                    </select>:
+                                    <select name="startm">
+                                        <option value="00" selected>00</option>
+                                        <option value="30">30</option>
+                                    </select>
+                                    <select name="startampm">
+                                        <option value="AM">AM</option>
+                                        <option value="PM" selected>PM</option>
+                                    </select>
+                                    <br />End
+                                    <select name="endh">
+                                        <option value="1" selected>1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                    </select>:
+                                    <select name="endm">
+                                        <option value="00" selected>00</option>
+                                        <option value="30">30</option>
+                                    </select>
+                                    <select name="endampm">
+                                        <option value="AM">AM</option>
+                                        <option value="PM" selected>PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <br />Primary Preference
+                            <br />
+                            <select id="primaryCompare">
+                                <option value="early" selected>Early Classes</option>
+                                <option value="late">Late Classes</option>
+                                <option value="compact">Minimize Spread</option>
+                                <option value="minGaps">Minimize Gaps</option>
+                                <option value="minDays">Minimize Number of Days</option>
+                            </select>
+                            <br />
+                            <br />Secondary Preference
+                            <br />
+                            <select id="secondaryCompare">
+                                <option value="early">Early Classes</option>
+                                <option value="late">Late Classes</option>
+                                <option value="compact">Minimize Spread</option>
+                                <option value="minGaps" selected>Minimize Gaps</option>
+                                <option value="minDays">Minimize Number of Days</option>
+                            </select>
+                            <br />
+                            <br />
+                            <input type="button" value="Generate" onclick="submit1();">
+                        </form>
+                    </div>
+                </div>
+                <div id="output" style="float:right">
+                    <script src="jquery.min.js"></script>
+                    <script src="ColorConversion.js"></script>
+                    <script src="RegistrarData.js"></script>
+                    <script src="BackEnd.js"></script>
+                    <div id="data"></div>
+                    <script type="text/javascript">
+                        // var courseStrings = ["CHEM022", "NURS809", "PHYS051", "AFRC149", "LGST210", "AFRC285", "GEOL125", "CIS160", "CIS320", "BEPP250", "PHYS151", "WRIT039", "LATN102", "BEPP305", "FNCE101", "MATH240", "CIS240", "MATH104"];
+                        // processCourseStrings(courseStrings);
+
+                        function processCourseStrings(courseStrings, customEvent, primaryCompare, secondaryCompare) {
+                            var sectionGroups = getSectionGroups(courseStrings);
+
+                            if (customEvent.days.length > 0) {
+                                var section = new Object();
+                                section.department = "Lunch Break";
+                                section.courseNumber = "";
+                                section.sectionNumber = "";
+
+                                section.startTime = parseInt(customEvent.starth);
+                                if (customEvent.startampm == "PM" && customEvent.starth != 12) {
+                                    section.startTime += 12;
+                                }
+                                if (customEvent.startm == "30") {
+                                    section.startTime += 0.5;
+                                }
+
+                                section.endTime = parseInt(customEvent.endh);
+                                if (customEvent.endampm == "PM" && customEvent.endh != 12) {
+                                    section.endTime += 12;
+                                }
+                                if (customEvent.endm == "30") {
+                                    section.endTime += 0.5;
+                                }
+
+                                section.days = customEvent.days;
+
+                                sectionGroups.push([section]);
+                            }
+
+                            var schedules = findSchedules(sectionGroups);
+
+                            if (schedules.length == 0) {
+                                $("#data").html("No schedules match your search.");
+                            }
+
+                            function convertToCompareFunction(functionName) {
+                                switch (functionName) {
+                                    case "early":
+                                        return compareEarly;
+                                    case "late":
+                                        return compareLate;
+                                    case "compact":
+                                        return compareCompact;
+                                    case "minGaps":
+                                        return compareMinGaps;
+                                    case "minDays":
+                                        return compareMinDays;
+                                }
+                            }
+
+                            sortSchedules(schedules, convertToCompareFunction(primaryCompare), convertToCompareFunction(secondaryCompare));
+
+                            console.log("Total number of schedules: " + schedules.length);
+
+                            $("#data").html("Optimized Schedule:<br /><br />" + scheduleToHTML(schedules[0]));
+                            $("#data").append("<br />Random Schedule:<br /><br />" + scheduleToHTML(schedules[schedules.length - 1]));
+                        }
+                    </script>
+                </div>
+            </div>
+            <br clear="all" />
+            <br clear="all" />
+            <div id="footer" class="centerVertically" style="width:950px; height:50px; background-color:gray; color:white; font-size:16;">Nina Lu, Lauren Reeder, Mitchell Stern, Dylan Sun</div>
+        </div>
+    </body>
+
+</html>

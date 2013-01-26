@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+	<body>
+		<!-- <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script> -->
+		<script src="jquery.min.js"></script>
+		<script src="RegistrarData.js"></script>
+
+		<div id="data"></div>
+
+		<script type="text/javascript">
+			
+			var registrarData = $.parseJSON(registrarDataString);
+			// $("#data").html(data[0].days.join(" "));
+
+			var courseData = new Array();
+
+			for (var i = 0; i < registrarData.length; i++) {
+				var section = registrarData[i];
+				var department = section.dept;
+				var courseNumber = section.courseNumber;
+				
+				if (!(department in courseData)) {
+					courseData[department] = new Array();
+				}
+
+				if (!(courseNumber in courseData[department])) {
+					courseData[department][courseNumber] = new Array();
+				}
+
+				var sectionObject = new Object();
+
+				sectionObject.department = department;
+				sectionObject.courseNumber = courseNumber;
+
+				sectionObject.building = section.building;
+				sectionObject.credits = section.credits;
+				sectionObject.days = section.days;
+
+				sectionObject.startTime = parseFloat(section.hours[0].replace(":30", ".5"));
+				sectionObject.endTime = parseFloat(section.hours[1].replace(":30", ".5"));
+
+				// Convert times to 24-hour time
+				if (section.times.charAt(section.times.length - 2) == 'P') {
+					if(sectionObject.endTime != 12.5) {
+						sectionObject.endTime += 12;
+					}
+					if(sectionObject.endTime - sectionObject.startTime > 12) {
+						sectionObject.startTime += 12;
+					}
+				}
+
+				sectionObject.professor = section.prof;
+				sectionObject.roomNumber = section.roomNumber;
+				sectionObject.sectionNumber = section.sectionNumber;
+				sectionObject.times = section.times;
+				sectionObject.title = section.title;
+				sectionObject.type = section.type;
+
+				courseData[department][courseNumber].push(sectionObject);
+
+			}
+
+			console.log(courseData);
+
+			var courseRegex = /^([A-Z]+)[^A-Z\d]*(\d{3})$/;
+
+			function isValidCourse(input) {
+				return courseRegex.test(input.trim());
+			}
+
+			function parseCourse(input) {
+				var result = courseRegex.exec(input.trim());
+				// console.log(result.join(","));
+				// console.log(result.slice(1, 3).join(","));
+				return result.slice(1, 3);
+			}
+
+			function splitSectionsByType(sections) {
+				var array = new Array();
+				for (var i = 0; i < sections.length; i++) {
+					var section = sections[i];
+					if (!(section.type in array)) {
+						array[section.type] = new Array();
+					}
+					array[section.type].push(section);
+				}
+				return array;
+			}
+
+			var days = {"monday": 0, "tuesday": 0, "wednesday": 0, "thursday": 0, "friday": 0};
+
+			function findSchedules(sectionGroups) {
+				var filledSlots = new Array();
+				for(var day in days) {
+					filledSlots[day] = new Array();
+					for(var time = 0; time < 24; time += 0.5) {
+						filledSlots[day][time] = 0;
+					}
+				}
+				var validSchedules = new Array();
+				findSchedulesHelper(sectionGroups, 0, new Array(), filledSlots, validSchedules);
+				console.log(validSchedules);
+				return validSchedules;
+			}
+
+			function findSchedulesHelper(sectionGroups, currentGroup, currentSchedule, filledSlots, validSchedules) {
+				// Found a valid schedule
+				if (currentGroup == sectionGroups.length) {
+					scheduleObject = new Object();
+
+					scheduleObject.schedule = currentSchedule.slice(0);
+					
+					scheduleObject.filledSlots = new Array();
+					for (var day in days) {
+						scheduleObject.filledSlots[day] = filledSlots[day].slice(0);
+					}
+
+					computeScheduleStatistics(scheduleObject);
+
+					validSchedules.push(scheduleObject);
+
+					return;
+				}
+
+				for(var i = 0; i < sectionGroups[currentGroup].length; i++) {
+					var section = sectionGroups[currentGroup][i];
+					if (canAddSection(filledSlots, section)) {
+						currentSchedule.push(section);
+						fillSlots(filledSlots, section);
+						findSchedulesHelper(sectionGroups, currentGroup + 1, currentSchedule, filledSlots, validSchedules);
+						clearSlots(filledSlots, section);
+						currentSchedule.pop();
+					}
+				}
+			}
+
+			function canAddSection(filledSlots, section) {
+				for (var i = 0; i < section.days.length; i++) {
+					for (var time = section.startTime; time < section.endTime; time += 0.5) {
+						if (filledSlots[section.days[i]][time] == 1) {
+							return false;
+						}
+					}
+				}
+				return true;
+			}
+
+			function fillSlots(filledSlots, section) {
+				for (var i = 0; i < section.days.length; i++) {
+					for (var time = section.startTime; time < section.endTime; time += 0.5) {
+						filledSlots[section.days[i]][time] = 1;
+					}
+				}
+			}
+
+			function clearSlots(filledSlots, section) {
+				for (var i = 0; i < section.days.length; i++) {
+					for (var time = section.startTime; time < section.endTime; time += 0.5) {
+						filledSlots[section.days[i]][time] = 0;
+					}
+				}
+			}
+
+			function computeScheduleStatistics(scheduleObject) {
+				// scheduleObject.schedule
+				// scheduleObject.filledSlots
+
+				var earliestStartTime = 24;
+				var latestEndTime = 0;
+
+				var schedule = scheduleObject.schedule;
+				for (var i = 0; i < schedule.length; i++) {
+					var section = schedule[i];
+					earliestStartTime = Math.min(earliestStartTime, section.startTime);
+					latestEndTime = Math.max(latestEndTime, section.endTime);
+				}
+
+				scheduleObject.earliestStartTime = earliestStartTime;
+				scheduleObject.latestEndTime = latestEndTime;
+			}
+
+			function scheduleToHTML(scheduleObject) {
+				var schedule = scheduleObject.schedule;
+				var earliestStartTime = scheduleObject.earliestStartTime;
+				var latestEndTime = scheduleObject.latestEndTime;
+
+				var table = new Array();
+				
+				for (var day in days) {
+					table[day] = new Array();
+					for (var time = earliestStartTime; time < latestEndTime; time += 0.5) {
+						table[day][time] = "";
+					}
+				}
+
+				for (var i = 0; i < schedule.length; i++) {
+					var section = schedule[i];
+					for (var j = 0; j < section.days.length; j++) {
+						for (var time = section.startTime; time < section.endTime; time += 0.5) {
+							table[section.days[j]][time] = section.department + " " + section.courseNumber + " " + section.sectionNumber;
+						}
+					}
+				}
+
+				console.log(table);
+
+				var htmlString = "";
+
+				htmlString += "<table border=\"1\">";
+				htmlString += "<tr>";
+				htmlString += "<td></td>"
+				for (var day in days) {
+					htmlString += "<td>" + day + "</td>";
+				}
+				htmlString += "</tr>";
+				for (var time = earliestStartTime; time < latestEndTime; time += 0.5) {
+					htmlString += "<tr>";
+					htmlString += "<td>" + Math.floor(time <= 12.5 ? time : time - 12) + (time % 1 == 0 ? ":00" : ":30") + "</td>";
+					for (var day in days) {
+						htmlString += "<td>" + table[day][time] + "</td>";
+					}
+					htmlString += "</tr>";
+				}
+
+				return htmlString;
+			}
+
+			//var courseStrings = ["CIS121", "CIS160", "CIS320", "BEPP250", "PHYS151", "MATH240", "WRIT039", "LATN102", "BEPP305", "FNCE101"];
+
+			var courseStrings = ["WRIT039", "BEPP250","PHYS151","MATH240"]
+
+			var sectionGroups = new Array(); 
+			for (var i = 0; i < courseStrings.length; i++) {
+				var course = parseCourse(courseStrings[i]);
+				var department = course[0];
+				console.log(course);
+				var courseNumber = course[1];
+				var sectionsByType = splitSectionsByType(courseData[department][courseNumber]);
+				for (type in sectionsByType) {
+					console.log(department + " " + courseNumber+ " " + type + ":");
+					console.log(sectionsByType[type]);
+					sectionGroups.push(sectionsByType[type]);
+				}
+			}
+			console.log(sectionGroups);
+
+			function printSchedule(schedule) {
+				console.log("Schedule:");
+				for (var i = 0; i < schedule.length; i++) {
+					var section = schedule[i];
+					console.log(section.department + " " + section.courseNumber + " " + section.sectionNumber + " at " + section.times);
+				}
+				console.log("\n");
+			}
+
+			function sortEarly(schedules) {
+				schedules.sort(
+					function(s1, s2) {
+						return s1.latestEndTime - s2.latestEndTime;
+					}
+				);	
+			}
+
+			function sortLate(schedules) {
+				schedules.sort(
+					function(s1, s2) {
+						return s2.earliestStartTime - s1.earliestStartTime;
+					}
+				);
+			}
+
+			var schedules = findSchedules(sectionGroups);
+			sortLate(schedules);
+			for (var i = 0; i < schedules.length; i++) {
+				// printSchedule(schedules[i].schedule);
+				// $("#data").append(scheduleToHTML(schedules[i]) + "<br />");
+			}
+
+			console.log("Total number of schedules: " + schedules.length);
+
+			$("#data").append(scheduleToHTML(schedules[0]) + "<br />");
+			$("#data").append(scheduleToHTML(schedules[55]) + "<br />");
+			$("#data").append(scheduleToHTML(schedules[55000]) + "<br />");
+			$("#data").append(scheduleToHTML(schedules[schedules.length-1]) + "<br />");
+
+		</script>
+	</body>
+</html> 

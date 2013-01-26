@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+	<body>
+		<!-- <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script> -->
+		<script src="jquery.min.js"></script>
+		<script src="ColorConversion.js"></script>
+		<script src="RegistrarData.js"></script>
+		<script src="BackEnd.js"></script>
+
+		<div id="data"></div>
+
+		<script type="text/javascript">
+			var courseStrings = ["ACCT101", "CIS160", "CIS320", "BEPP250", "PHYS151", "WRIT039", "LATN102", "BEPP305", "FNCE101", "MATH240", "CIS240", "MATH104"];
+			// var courseStrings = ["MATH240", "BEPP250", "WRIT039"];
+
+			var sectionGroups = getSectionGroups(courseStrings);
+
+			var schedules = findSchedules(sectionGroups);
+			sortSchedules(schedules, compareEarly, compareMinGaps);
+
+			console.log("Total number of schedules: " + schedules.length);
+
+			$("#data").append(scheduleToHTML(schedules[0]) + "<br />");
+		</script>
+	</body>
+</html> 

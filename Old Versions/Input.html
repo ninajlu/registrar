@@ -1,0 +1,211 @@
+<html>
+    
+    <head>
+        <!--<link rel="stylesheet" type="text/css" href="style.css" />-->
+        <title></title>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+        <script type="text/javascript">
+            var counterClasses = 1;
+            var counterEvents = 1;
+            var courses = new Array();
+            var events = new Array();
+
+            function addInput(divName) {
+                if (divName == "classes") {
+                    var title = "Class";
+                    var newdiv = document.createElement('div');
+                    var namer = "classes" + (counterClasses + 1);
+                    newdiv.setAttribute("id", namer);
+                    newdiv.innerHTML = title + " " + (counterClasses + 1) + " <br><input type='text' name=" + namer + ">";
+                    document.getElementById(divName).appendChild(newdiv);
+                    counterClasses++;
+                } else {
+                    var title = "Custom Event";
+                    var newdiv = document.createElement('div');
+                    var namer = "events" + (counterEvents + 1);
+                    newdiv.setAttribute("id", namer);
+                    newdiv.innerHTML = title + " " + (counterEvents + 1) + " <br><input type='text' name=" + namer + ">" + ' Days <input type="checkbox" name="days' + (counterEvents + 1) + '" value="M">M<input type="checkbox" name="days' + (counterEvents + 1) + '" value="T">T<input type="checkbox" name="days' + (counterEvents + 1) + '" value="W">W<input type="checkbox" name="days' + (counterEvents + 1) + '"  value="R">Th<input type="checkbox" name="days' + (counterEvents + 1) + '" value="F">FStart <select name="starth' + (counterEvents + 1) + '"><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>:<select name="startm' + (counterEvents + 1) + '"><option value="00" selected>00</option><option value="30">30</option></select><select name="startampm' + (counterEvents + 1) + '"><option value="AM">AM</option><option value="PM" selected>PM</option></select>End<select name="endh' + (counterEvents + 1) + '"><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>:<select name="endm' + (counterEvents + 1) + '"><option value="00" selected>00</option><option value="30">30</option></select><select name="endampm' + (counterEvents + 1) + '"><option value="AM">AM</option><option value="PM" selected>PM</option></select>';
+                    document.getElementById(divName).appendChild(newdiv);
+                    counterEvents++;
+                }
+            };
+
+            function submit1() {
+                //Checking data here:
+                courses = new Array();
+                events = new Array();
+                $("#classes > div").each(function (i, obj) {
+                    console.log(obj);
+                    $("input").each(function (i2, obj2) {
+                        if (obj2.type == "text") {
+                            if (obj2.name.indexOf("class") != -1) {
+                                courses.push(obj2.value);
+                            }
+                            console.log(courses);
+                        }
+                    });
+                });
+                $("#events > div").each(function (i, obj) {
+                    console.log(obj);
+                    var customEvent = new Object();
+                    customEvent.days = new Array();
+                    $("input").each(function (i2, obj2) {
+                        if (obj2.name.indexOf("event") != -1) {
+                            customEvent.name = obj2.value;
+                        } else if (obj2.name.indexOf("day") != -1) {
+
+                            //console.log("hello");
+                            //console.log("obj2"+obj2);
+                            if (obj2.checked == true) {
+                                // console.log("ob3"+obj2);
+                                (customEvent.days).push(obj2.value);
+                            }
+                        }
+
+                    });
+                    $("select").each(function (i2, obj2) {
+                        if (obj2.name.indexOf("starth") != -1) {
+                            $("option", this).each(function (i5, obj5) {
+                                console.log(obj5.selected);
+                                if (obj5.selected == true) {
+                                    customEvent.starth = obj5.value;
+                                }
+                            });
+                        } else if (obj2.name.indexOf("startm") != -1) {
+                            $("option", this).each(function (i5, obj5) {
+                                if (obj5.selected == true) {
+                                    customEvent.startm = obj5.value;
+                                }
+                            });
+                        } else if (obj2.name.indexOf("startampm") != -1) {
+                            $("option", this).each(function (i6, obj6) {
+                                if (obj6.selected == true) {
+                                    customEvent.startampm = obj6.value;
+                                }
+                            });
+                        } else if (obj2.name.indexOf("endh") != -1) {
+                            $("option", this).each(function (i7, obj7) {
+                                if (obj7.selected == true) {
+                                    customEvent.endh = obj7.value;
+                                }
+                            });
+                        } else if (obj2.name.indexOf("endm") != -1) {
+                            $("option", this).each(function (i8, obj8) {
+                                if (obj8.selected == true) {
+                                    customEvent.endm = obj8.value;
+                                }
+                            });
+                        } else if (obj2.name.indexOf("endampm") != -1) {
+                            $("option", this).each(function (i9, obj9) {
+                                if (obj9.selected == true) {
+                                    customEvent.endampm = obj9.value;
+                                }
+                            });
+                        }
+                        console.log(obj2);
+                    });
+                    events.push($.extend(true, {}, customEvent));
+                    customEvent = new Object();
+                });
+                console.log(events);
+                /*$("input").each(function(i, obj)
+        {
+          if(obj.type=="text"){
+            if(obj.name.indexOf("class")!=-1){
+              courses.push(obj.value);
+            }
+            else if(obj.name.indexOf("event")!=-1){
+              var newEvent=new Object();
+              newEvent.name=
+              events.push(obj.value);
+
+            }
+          var txt=document.getElementById("outputs");
+          txt.innerHTML+="<br>hi"+obj.value+obj.type;}
+          console.log(obj);
+          console.log(obj.value);
+          console.log(courses);
+          console.log(events);
+
+        });*/
+
+                //alert($(this).serialize());
+                //alert(toJSON($(this).serializeArray()));
+                //return false;
+            }
+        </script>
+    </head>
+    
+    <body>
+        <div id="stylized" class="myform">
+            <form name="form1">
+                <div id="classes">
+                    <div id="classes1">Class
+                        <br>
+                        <input type="text" name="classes1">
+                    </div>
+                </div>
+                <div id="events">
+                    <div id="events1">Event
+                        <br>
+                        <input type="text" name="events1">Days
+                        <input type="checkbox" name="days" value="M">M
+                        <input type="checkbox" name="days" value="T">T
+                        <input type="checkbox" name="days" value="W">W
+                        <input type="checkbox" name="days" value="R">Th
+                        <input type="checkbox" name="days" value="F">F Start
+                        <select name="starth">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>:
+                        <select name="startm">
+                            <option value="00" selected>00</option>
+                            <option value="30">30</option>
+                        </select>
+                        <select name="startampm">
+                            <option value="AM">AM</option>
+                            <option value="PM" selected>PM</option>
+                        </select>End
+                        <select name="endh">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>:
+                        <select name="endm">
+                            <option value="00" selected>00</option>
+                            <option value="30">30</option>
+                        </select>
+                        <select name="endampm">
+                            <option value="AM">AM</option>
+                            <option value="PM" selected>PM</option>
+                        </select>
+                    </div>
+                </div>
+                <input type="button" value="Add another class" onClick="addInput('classes');">
+                <!-- <input type="button" value="Add another custom event" onClick="addInput('events');">-->
+                <input type="button" value="Generate" onclick="submit1();">
+            </form>
+        </div>
+        <div id=outputs>Outputs</div>
+    </body>
+
+</html>

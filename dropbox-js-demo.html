@@ -1,0 +1,34 @@
+<html>
+
+<head>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/dropbox.js/0.8.2/dropbox.min.js">
+</script>
+</head>	
+
+<script type="text/javascript">
+var client = new Dropbox.Client({
+    key: "rpjwmcywhgs4js1", secret: "ik26j4u121f8cjm", sandbox: true
+});
+
+client.authDriver(new Dropbox.Drivers.Redirect());
+
+client.authenticate(function(error, client) {
+  if (error) {
+    Something went wrong :(
+    return showError(error);
+  }
+
+  
+  // Replace with a call to your own application code.
+  //
+  // The user authorized your app, and everything went well.
+  // client is a Dropbox.Client instance that you can use to make API calls.
+
+
+  // DO STUFF with the client!!
+  console.log(client.tokenSecret);
+  console.log(client.token);
+});
+</script>
+
+</html>
